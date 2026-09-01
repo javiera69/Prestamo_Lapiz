@@ -492,7 +492,7 @@ td.actions{text-align:right; white-space:nowrap;}
      CONFIGURA AQUÍ LA URL DE TU APPS SCRIPT (ver apps-script-backend.gs)
      Debe terminar en "/exec"
      ======================================================= */
-  var API_URL ="https://script.google.com/macros/s/AKfycbwC_z4GMrDtamIDdqKjomgvH8Mz9P1rGXsn1JbCQzvwEsWeKgQwMg1VFHXXZZaYg_7V/exec";
+  var API_URL = "https://script.google.com/macros/s/AKfycbwC_z4GMrDtamIDdqKjomgvH8Mz9P1rGXsn1JbCQzvwEsWeKgQwMg1VFHXXZZaYg_7V/exec";
 
   var state = { lapices: [], prestamos: [], centro: "" };
   var LS_KEY = "pdi_prestamos_registrado_por";
@@ -575,8 +575,14 @@ td.actions{text-align:right; white-space:nowrap;}
     return API_URL.indexOf("PON_AQUI") === -1;
   }
   function apiGet(action){
-    return fetch(API_URL + "?action=" + encodeURIComponent(action), { method: "GET" })
-      .then(function(r){ return r.json(); })
+    // "_" es solo para romper la caché del navegador y de Google ante
+    // fallos intermitentes justo tras publicar o actualizar el Apps Script.
+    var bust = "&_=" + Date.now();
+    return fetch(API_URL + "?action=" + encodeURIComponent(action) + bust, { method: "GET", cache: "no-store" })
+      .then(function(r){
+        if(!r.ok) throw new Error("El servidor respondió " + r.status + ". Vuelve a intentarlo en unos segundos.");
+        return r.json();
+      })
       .then(function(json){
         if(json.error) throw new Error(json.error);
         return json.data;
@@ -1145,7 +1151,12 @@ td.actions{text-align:right; white-space:nowrap;}
       renderAll();
       return;
     }
-    refreshAll();
+    // Justo tras publicar o actualizar el Apps Script, Google puede tardar
+    // unos segundos en servirlo de forma consistente: si la primera carga
+    // falla, se reintenta una vez en silencio antes de mostrar el aviso.
+    refreshAll(true).then(function(){
+      if(!$("#db-banner").hidden) setTimeout(function(){ refreshAll(); }, 2500);
+    });
     pollTimer = setInterval(function(){
       if(document.visibilityState === "visible") refreshAll(true);
     }, 20000);
