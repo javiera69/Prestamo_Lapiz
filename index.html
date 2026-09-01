@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Préstamo de Lápices PDI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#F2F5F3;
+  --surface:#FFFFFF;
+  --surface-2:#E9EEEA;
+  --border:#D7E0DA;
+  --text:#182420;
+  --text-muted:#5C6E65;
+  --accent:#2C5FA8;
+  --accent-strong:#1E4478;
+  --accent-soft:#E3ECF9;
+  --success:#2E8B57;
+  --success-soft:#E1F3E7;
+  --warning:#B9790E;
+  --warning-soft:#FBEEDC;
+  --critical:#C1392B;
+  --critical-soft:#FBE4E1;
+  --chip-neutral:#E7EAE7;
+  --chip-neutral-text:#5C6E65;
+  --shadow:0 1px 2px rgba(24,36,32,.06),0 6px 18px rgba(24,36,32,.06);
+  --radius:10px;
+  --font-display:'Archivo',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --font-body:'Public Sans',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121815; --surface:#182420; --surface-2:#1F2B26; --border:#2C3A34;
+    --text:#E8EDE9; --text-muted:#9FB0A7;
+    --accent:#7CA6E6; --accent-strong:#9DC0F2; --accent-soft:#22344E;
+    --success:#5BBE84; --success-soft:#1C3626;
+    --warning:#E0A94A; --warning-soft:#3A2C14;
+    --critical:#E17163; --critical-soft:#3B211E;
+    --chip-neutral:#263029; --chip-neutral-text:#9FB0A7;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121815; --surface:#182420; --surface-2:#1F2B26; --border:#2C3A34;
+  --text:#E8EDE9; --text-muted:#9FB0A7;
+  --accent:#7CA6E6; --accent-strong:#9DC0F2; --accent-soft:#22344E;
+  --success:#5BBE84; --success-soft:#1C3626;
+  --warning:#E0A94A; --warning-soft:#3A2C14;
+  --critical:#E17163; --critical-soft:#3B211E;
+  --chip-neutral:#263029; --chip-neutral-text:#9FB0A7;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 24px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--font-body); line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--font-display); font-weight:700; text-wrap:balance; margin:0;}
+button, input, select, textarea{font-family:inherit; font-size:inherit; color:inherit;}
+button{cursor:pointer;}
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+img{max-width:100%;}
+::selection{background:var(--accent-soft);}
+
+.wrap{max-width:1040px; margin:0 auto; padding:0 20px 64px;}
+
+/* Topbar */
+.topbar{position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--border);}
+.topbar-inner{max-width:1040px; margin:0 auto; padding:22px 20px 18px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px;}
+.brand{display:flex; flex-direction:column; gap:2px;}
+.brand-eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+.brand h1{font-size:22px; letter-spacing:-.01em;}
+.brand-sub{font-size:13px; color:var(--text-muted);}
+.brand-sub button{background:none; border:none; padding:0; color:var(--text-muted); text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; font-size:13px;}
+.brand-sub button:hover{color:var(--accent);}
+.icon-group{display:flex; gap:8px; flex:none;}
+.icon-btn{width:36px; height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:center; flex:none;}
+.icon-btn:hover{border-color:var(--accent);}
+.icon-btn svg{width:17px; height:17px; stroke:var(--text-muted);}
+.icon-btn.spinning svg{animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.stats-row{max-width:1040px; margin:0 auto; padding:0 20px 16px; display:flex; gap:10px; flex-wrap:wrap;}
+.stat{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; display:flex; align-items:baseline; gap:8px; min-width:108px;}
+.stat b{font-family:var(--font-display); font-size:20px; font-variant-numeric:tabular-nums;}
+.stat span{font-size:12px; color:var(--text-muted);}
+.stat.warn b{color:var(--critical);}
+
+.tabbar{max-width:1040px; margin:0 auto; padding:0 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+.tabs{display:flex; gap:4px; background:var(--surface-2); border-radius:10px; padding:4px;}
+.tab{border:none; background:transparent; padding:8px 14px; border-radius:7px; font-weight:600; font-size:13.5px; color:var(--text-muted);}
+.tab[aria-selected="true"]{background:var(--surface); color:var(--text); box-shadow:var(--shadow);}
+.btn-primary{background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:6px; box-shadow:var(--shadow);}
+.btn-primary:hover{background:var(--accent-strong);}
+.btn-primary:disabled{opacity:.6; cursor:default;}
+
+main{max-width:1040px; margin:0 auto; padding:20px 20px 0;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden;}
+.card-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+.card-head h2{font-size:15.5px;}
+.card-head .search{display:flex; align-items:center; gap:8px; background:var(--surface-2); border-radius:8px; padding:6px 10px; min-width:200px;}
+.card-head .search input{background:none; border:none; width:100%; font-size:13px;}
+.card-head .search svg{width:14px; height:14px; stroke:var(--text-muted); flex:none;}
+
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+.table-scroll{overflow-x:auto;}
+thead th{text-align:left; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); font-weight:600; padding:10px 18px; border-bottom:1px solid var(--border); white-space:nowrap;}
+tbody td{padding:12px 18px; border-bottom:1px solid var(--border); vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+td.mono, .mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+td.actions{text-align:right; white-space:nowrap;}
+
+.chip{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:100px; white-space:nowrap;}
+.chip::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor;}
+.chip-success{background:var(--success-soft); color:var(--success);}
+.chip-warning{background:var(--warning-soft); color:var(--warning);}
+.chip-critical{background:var(--critical-soft); color:var(--critical);}
+.chip-accent{background:var(--accent-soft); color:var(--accent-strong);}
+.chip-neutral{background:var(--chip-neutral); color:var(--chip-neutral-text);}
+
+.link-btn{background:none; border:none; color:var(--accent); font-weight:600; font-size:12.5px; padding:6px 8px; border-radius:6px;}
+.link-btn:hover{background:var(--accent-soft);}
+.link-btn.danger{color:var(--critical);}
+.link-btn.danger:hover{background:var(--critical-soft);}
+.link-btn:disabled{color:var(--text-muted); cursor:not-allowed;}
+.link-btn:disabled:hover{background:none;}
+
+.empty{padding:44px 18px; text-align:center; color:var(--text-muted); font-size:13.5px;}
+.empty b{display:block; color:var(--text); font-family:var(--font-display); font-size:15px; margin-bottom:4px;}
+.empty .btn-primary{margin-top:14px;}
+
+.banner{display:flex; gap:10px; align-items:flex-start; background:var(--warning-soft); color:var(--warning); border:1px solid var(--warning); border-radius:10px; padding:12px 14px; font-size:13px; margin-bottom:16px;}
+.banner strong{display:block; color:var(--text);}
+.banner code{background:var(--surface-2); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:12px;}
+
+.foot-note{color:var(--text-muted); font-size:12px; text-align:center; padding:28px 0 0;}
+
+/* Modals */
+.modal-overlay{position:fixed; inset:0; background:rgba(10,15,13,.5); display:flex; align-items:flex-start; justify-content:center; padding:5vh 16px; z-index:100; overflow-y:auto;}
+.modal-overlay[hidden]{display:none;}
+.modal-card{background:var(--surface); border-radius:16px; border:1px solid var(--border); width:100%; max-width:480px; box-shadow:0 20px 50px rgba(0,0,0,.25); margin:auto;}
+.modal-card.wide{max-width:560px;}
+.modal-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border);}
+.modal-head h3{font-size:16px;}
+.modal-close{background:none; border:none; width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:var(--text-muted);}
+.modal-close:hover{background:var(--surface-2);}
+.modal-body{padding:18px 20px; display:flex; flex-direction:column; gap:14px; max-height:70vh; overflow-y:auto;}
+.modal-foot{display:flex; justify-content:flex-end; gap:8px; padding:16px 20px; border-top:1px solid var(--border);}
+.btn-secondary{background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:9px 15px; font-weight:600; font-size:13.5px;}
+.btn-secondary:hover{background:var(--chip-neutral);}
+.btn-danger{background:var(--critical); color:#fff; border:none; border-radius:8px; padding:9px 15px; font-weight:600; font-size:13.5px;}
+.btn-danger:hover{opacity:.9;}
+
+.field{display:flex; flex-direction:column; gap:5px;}
+.field label{font-size:12.5px; font-weight:600; color:var(--text-muted);}
+.field .hint{font-size:11.5px; color:var(--text-muted); font-weight:400;}
+.field input[type="text"], .field input[type="date"], .field select, .field textarea{
+  border:1px solid var(--border); background:var(--surface-2); border-radius:8px; padding:9px 11px; font-size:13.5px; width:100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus{background:var(--surface); border-color:var(--accent);}
+.field textarea{resize:vertical; min-height:60px; font-family:inherit;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media (max-width:480px){.row2{grid-template-columns:1fr;}}
+
+.check-row{display:flex; align-items:flex-start; gap:9px; background:var(--surface-2); border-radius:9px; padding:11px 12px;}
+.check-row input{margin-top:2px;}
+.check-row span{font-size:13px;}
+
+.sign-wrap{border:1px solid var(--border); border-radius:9px; background:var(--surface-2); overflow:hidden;}
+.sign-wrap canvas{display:block; width:100%; height:130px; touch-action:none; cursor:crosshair;}
+.sign-foot{display:flex; align-items:center; justify-content:space-between; padding:6px 10px; border-top:1px solid var(--border); font-size:11.5px; color:var(--text-muted);}
+
+#modal-confirm .modal-body{color:var(--text-muted); font-size:13.5px;}
+
+/* Toasts */
+.toast-container{position:fixed; bottom:20px; right:20px; z-index:300; display:flex; flex-direction:column; gap:8px; max-width:320px;}
+.toast{background:var(--surface); border:1px solid var(--border); box-shadow:0 10px 24px rgba(0,0,0,.15); border-radius:10px; padding:11px 14px; font-size:13px;}
+.toast.error{border-color:var(--critical); color:var(--critical);}
+.toast.success{border-color:var(--success); color:var(--success);}
+
+/* Receipt / print */
+#receipt-print-area{display:none;}
+.receipt{max-width:480px; margin:0 auto; font-family:var(--font-body); color:#111;}
+.receipt h2{font-family:var(--font-display); font-size:18px; margin-bottom:2px;}
+.receipt .r-sub{font-size:12px; color:#555; margin-bottom:18px;}
+.receipt table{width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px;}
+.receipt td{padding:6px 0; border-bottom:1px solid #ddd;}
+.receipt td:first-child{color:#666; width:40%;}
+.receipt .r-norms{font-size:11.5px; color:#444; border:1px solid #ccc; border-radius:6px; padding:10px; margin-bottom:18px;}
+.receipt .r-sign img{max-width:220px; display:block; border-bottom:1px solid #333; margin-bottom:4px;}
+.receipt .r-sign .line{width:220px; border-bottom:1px solid #333; height:44px;}
+.receipt .r-sign p{font-size:11.5px; color:#666; margin:0;}
+
+@media print{
+  body.printing > *:not(#receipt-print-area){display:none !important;}
+  #receipt-print-area{display:block !important;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .icon-btn.spinning svg{animation:none;}
+}
+@media (prefers-reduced-motion: no-preference){
+  .modal-card{animation:pop .15s ease-out;}
+}
+@keyframes pop{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-eyebrow">Medios informáticos</span>
+      <h1>Préstamo de lápices PDI</h1>
+      <span class="brand-sub" id="brand-sub">Cargando datos… <button type="button" id="btn-config">editar centro</button></span>
+    </div>
+    <div class="icon-group">
+      <button class="icon-btn" id="btn-refresh" title="Actualizar" aria-label="Actualizar">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></svg>
+      </button>
+      <button class="icon-btn" id="btn-config-icon" title="Configuración" aria-label="Configuración">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </div>
+  </div>
+  <div class="stats-row" id="stats-row"></div>
+  <div class="tabbar" style="padding-bottom:14px;">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="activos" aria-selected="true">Préstamos activos</button>
+      <button class="tab" role="tab" data-tab="inventario" aria-selected="false">Inventario</button>
+      <button class="tab" role="tab" data-tab="historial" aria-selected="false">Historial</button>
+    </div>
+    <button class="btn-primary" id="btn-new-loan">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      Nuevo préstamo
+    </button>
+  </div>
+</div>
+
+<main>
+  <div id="config-banner" class="banner" hidden>
+    <div><strong>Falta configurar la conexión con Google Sheets</strong>Abre este archivo, busca la constante <code>API_URL</code> cerca del final del &lt;script&gt; y pega ahí la URL de tu Apps Script (termina en <code>/exec</code>).</div>
+  </div>
+  <div id="db-banner" class="banner" hidden>
+    <div><strong>No se ha podido conectar con la hoja de cálculo</strong><span id="db-banner-msg">Revisa tu conexión o vuelve a intentarlo.</span></div>
+  </div>
+
+  <!-- Panel: activos -->
+  <section class="panel active" id="panel-activos">
+    <div class="card">
+      <div class="card-head">
+        <h2>Préstamos activos</h2>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="text" id="search-activos" placeholder="Buscar por profesor o código…">
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table id="table-activos">
+          <thead><tr>
+            <th>Lápiz</th><th>Profesor/a</th><th>Entregado</th><th>Devolución prevista</th><th>Estado</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty-activos" hidden></div>
+    </div>
+  </section>
+
+  <!-- Panel: inventario -->
+  <section class="panel" id="panel-inventario">
+    <div class="card">
+      <div class="card-head">
+        <h2>Inventario de lápices</h2>
+        <button class="btn-primary" id="btn-new-lapiz">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          Añadir lápiz
+        </button>
+      </div>
+      <div class="table-scroll">
+        <table id="table-inventario">
+          <thead><tr>
+            <th>Código</th><th>Marca / modelo</th><th>Estado</th><th>Notas</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty-inventario" hidden></div>
+    </div>
+  </section>
+
+  <!-- Panel: historial -->
+  <section class="panel" id="panel-historial">
+    <div class="card">
+      <div class="card-head">
+        <h2>Historial de devoluciones</h2>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input type="text" id="search-historial" placeholder="Buscar por profesor o código…">
+          </div>
+          <button class="link-btn" id="btn-export-csv">Exportar CSV</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table id="table-historial">
+          <thead><tr>
+            <th>Lápiz</th><th>Profesor/a</th><th>Entregado</th><th>Devuelto</th><th>Estado al devolver</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty-historial" hidden></div>
+    </div>
+  </section>
+
+  <p class="foot-note">Los datos se guardan en tu Google Sheet. Esta página los sincroniza cada 20&nbsp;segundos, o al pulsar «Actualizar».</p>
+</main>
+
+<!-- Modal: nuevo préstamo -->
+<div class="modal-overlay" id="modal-loan" hidden>
+  <div class="modal-card wide">
+    <div class="modal-head"><h3>Nuevo préstamo</h3><button class="modal-close" data-close="modal-loan" aria-label="Cerrar">✕</button></div>
+    <form id="form-loan">
+      <div class="modal-body">
+        <div class="field">
+          <label for="loan-lapiz">Lápiz</label>
+          <select id="loan-lapiz" required></select>
+        </div>
+        <div class="field">
+          <label for="loan-profesor">Profesor/a</label>
+          <input type="text" id="loan-profesor" placeholder="Nombre y apellidos" required>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="loan-fecha">Fecha de entrega</label>
+            <input type="date" id="loan-fecha" required>
+          </div>
+          <div class="field">
+            <label for="loan-prevista">Devolución prevista<span class="hint"> (opcional)</span></label>
+            <input type="date" id="loan-prevista">
+          </div>
+        </div>
+        <div class="field">
+          <label for="loan-notas">Notas<span class="hint"> (opcional)</span></label>
+          <textarea id="loan-notas" placeholder="Aula, incidencias iniciales, accesorios entregados…"></textarea>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="loan-acepta" required>
+          <span>Confirmo que el profesor/a ha recibido el lápiz, conoce las normas de uso y se compromete a devolverlo.</span>
+        </div>
+        <div class="field">
+          <label for="loan-firma-nombre">Firma de quien recibe (nombre y apellidos)</label>
+          <input type="text" id="loan-firma-nombre" required>
+        </div>
+        <div class="field">
+          <label>Firma manuscrita<span class="hint"> (opcional, con ratón o pantalla táctil)</span></label>
+          <div class="sign-wrap">
+            <canvas id="loan-signature"></canvas>
+            <div class="sign-foot"><span>Dibuja aquí la firma</span><button type="button" class="link-btn" id="btn-clear-signature">Borrar</button></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="loan-registrado-por">Registrado por<span class="hint"> (opcional)</span></label>
+          <input type="text" id="loan-registrado-por" placeholder="Tu nombre">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-secondary" data-close="modal-loan">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btn-submit-loan">Registrar préstamo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: devolver -->
+<div class="modal-overlay" id="modal-return" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h3>Registrar devolución</h3><button class="modal-close" data-close="modal-return" aria-label="Cerrar">✕</button></div>
+    <form id="form-return">
+      <div class="modal-body">
+        <p id="return-summary" style="margin:0; font-size:13.5px; color:var(--text-muted);"></p>
+        <div class="field">
+          <label for="return-fecha">Fecha de devolución</label>
+          <input type="date" id="return-fecha" required>
+        </div>
+        <div class="field">
+          <label for="return-estado">Estado del material</label>
+          <select id="return-estado">
+            <option value="bueno">Correcto</option>
+            <option value="incidencia">Con incidencia leve</option>
+            <option value="dañado">Perdido o dañado</option>
+          </select>
+        </div>
+        <div class="check-row" id="return-baja-row" hidden>
+          <input type="checkbox" id="return-baja">
+          <span>Dar de baja este lápiz (no volverá a estar disponible para préstamo).</span>
+        </div>
+        <div class="field">
+          <label for="return-notas">Notas<span class="hint"> (opcional)</span></label>
+          <textarea id="return-notas" placeholder="Detalle de la incidencia, estado de la punta, pilas…"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-secondary" data-close="modal-return">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btn-submit-return">Confirmar devolución</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: nuevo lápiz -->
+<div class="modal-overlay" id="modal-lapiz" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h3>Añadir lápiz al inventario</h3><button class="modal-close" data-close="modal-lapiz" aria-label="Cerrar">✕</button></div>
+    <form id="form-lapiz">
+      <div class="modal-body">
+        <div class="field">
+          <label for="lapiz-codigo">Código</label>
+          <input type="text" id="lapiz-codigo" placeholder="Ej. PDI-01" required>
+        </div>
+        <div class="field">
+          <label for="lapiz-marca">Marca / modelo<span class="hint"> (opcional)</span></label>
+          <input type="text" id="lapiz-marca" placeholder="Ej. Promethean ActivPanel">
+        </div>
+        <div class="field">
+          <label for="lapiz-notas">Notas<span class="hint"> (opcional)</span></label>
+          <textarea id="lapiz-notas"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-secondary" data-close="modal-lapiz">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btn-submit-lapiz">Añadir lápiz</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: configuración -->
+<div class="modal-overlay" id="modal-config" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h3>Configuración</h3><button class="modal-close" data-close="modal-config" aria-label="Cerrar">✕</button></div>
+    <form id="form-config">
+      <div class="modal-body">
+        <div class="field">
+          <label for="config-centro">Nombre del centro</label>
+          <input type="text" id="config-centro" placeholder="Ej. CEIP / IES …">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-secondary" data-close="modal-config">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btn-submit-config">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: confirmación genérica -->
+<div class="modal-overlay" id="modal-confirm" hidden>
+  <div class="modal-card">
+    <div class="modal-head"><h3 id="confirm-title">Confirmar</h3><button class="modal-close" data-close="modal-confirm" aria-label="Cerrar">✕</button></div>
+    <div class="modal-body"><p id="confirm-body"></p></div>
+    <div class="modal-foot">
+      <button type="button" class="btn-secondary" data-close="modal-confirm">Cancelar</button>
+      <button type="button" class="btn-danger" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="receipt-print-area">
+  <div class="receipt" id="receipt-content"></div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =======================================================
+     CONFIGURA AQUÍ LA URL DE TU APPS SCRIPT (ver apps-script-backend.gs)
+     Debe terminar en "/exec"
+     ======================================================= */
+  var API_URL ="https://script.google.com/macros/s/AKfycbwC_z4GMrDtamIDdqKjomgvH8Mz9P1rGXsn1JbCQzvwEsWeKgQwMg1VFHXXZZaYg_7V/exec";
+
+  var state = { lapices: [], prestamos: [], centro: "" };
+  var LS_KEY = "pdi_prestamos_registrado_por";
+  var confirmCallback = null;
+  var refreshing = false;
+  var pollTimer = null;
+
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function el(tag, attrs, children){
+    var n = document.createElement(tag);
+    if(attrs) for(var k in attrs){ if(k === "text") n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]); }
+    (children||[]).forEach(function(c){ n.appendChild(c); });
+    return n;
+  }
+
+  function todayISO(){
+    var d = new Date();
+    var local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+    return local.toISOString().slice(0,10);
+  }
+  function dateOnly(v){
+    if(!v) return "";
+    var s = String(v);
+    return s.length >= 10 ? s.slice(0,10) : s;
+  }
+  function formatEs(iso){
+    iso = dateOnly(iso);
+    if(!iso) return "—";
+    var p = iso.split("-");
+    if(p.length !== 3) return iso;
+    return p[2] + "/" + p[1] + "/" + p[0];
+  }
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function toBool(v){ return v === true || v === "true" || v === "TRUE" || v === 1; }
+
+  /* ---------- Toasts ---------- */
+  function toast(msg, type){
+    var t = el("div", {class:"toast" + (type ? " " + type : "")});
+    t.textContent = msg;
+    $("#toast-container").appendChild(t);
+    setTimeout(function(){ t.remove(); }, 4500);
+  }
+
+  /* ---------- Modals ---------- */
+  function openModal(id){ $("#"+id).hidden = false; }
+  function closeModal(id){ $("#"+id).hidden = true; }
+  $all("[data-close]").forEach(function(b){
+    b.addEventListener("click", function(){ closeModal(b.getAttribute("data-close")); });
+  });
+  $all(".modal-overlay").forEach(function(ov){
+    ov.addEventListener("click", function(e){ if(e.target === ov) ov.hidden = true; });
+  });
+  function askConfirm(title, body, onOk){
+    $("#confirm-title").textContent = title;
+    $("#confirm-body").textContent = body;
+    confirmCallback = onOk;
+    openModal("modal-confirm");
+  }
+  $("#confirm-ok").addEventListener("click", function(){
+    var cb = confirmCallback;
+    closeModal("modal-confirm");
+    if(cb) cb();
+  });
+
+  /* ---------- Local, per-browser convenience ---------- */
+  function getRegistradoPor(){
+    try { return localStorage.getItem(LS_KEY) || ""; } catch(e){ return ""; }
+  }
+  function setRegistradoPor(v){
+    try { localStorage.setItem(LS_KEY, v || ""); } catch(e){}
+  }
+
+  /* ---------- API ---------- */
+  function apiConfigured(){
+    return API_URL.indexOf("PON_AQUI") === -1;
+  }
+  function apiGet(action){
+    return fetch(API_URL + "?action=" + encodeURIComponent(action), { method: "GET" })
+      .then(function(r){ return r.json(); })
+      .then(function(json){
+        if(json.error) throw new Error(json.error);
+        return json.data;
+      });
+  }
+  function apiPost(action, payload){
+    return fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: action, payload: payload })
+    }).then(function(r){ return r.json(); })
+      .then(function(json){
+        if(json.error) throw new Error(json.error);
+        return json;
+      });
+  }
+
+  function normalizeLapiz(l){
+    return { id: l.id, codigo: l.codigo, marca: l.marca || "", notas: l.notas || "", estado: l.estado || "disponible" };
+  }
+  function normalizePrestamo(p){
+    return {
+      id: p.id, lapizId: p.lapizId, lapizCodigo: p.lapizCodigo, lapizMarca: p.lapizMarca || "",
+      profesor: p.profesor, fechaEntrega: dateOnly(p.fechaEntrega),
+      fechaDevolucionPrevista: dateOnly(p.fechaDevolucionPrevista),
+      notas: p.notas || "", aceptaNormas: toBool(p.aceptaNormas), firmaNombre: p.firmaNombre || "",
+      firmaImagen: p.firmaImagen || "", registradoPor: p.registradoPor || "", estado: p.estado || "activo",
+      fechaDevolucionReal: dateOnly(p.fechaDevolucionReal), estadoDevolucion: p.estadoDevolucion || "",
+      notasDevolucion: p.notasDevolucion || ""
+    };
+  }
+
+  function refreshAll(silent){
+    if(!apiConfigured()){ $("#config-banner").hidden = false; return Promise.resolve(); }
+    if(refreshing) return Promise.resolve();
+    refreshing = true;
+    $("#btn-refresh").classList.add("spinning");
+    return apiGet("all").then(function(data){
+      state.lapices = (data.lapices || []).map(normalizeLapiz);
+      state.prestamos = (data.prestamos || []).map(normalizePrestamo);
+      state.centro = (data.config && data.config.centro) || "";
+      $("#db-banner").hidden = true;
+      updateBrandSub();
+      renderAll();
+    }).catch(function(err){
+      $("#db-banner").hidden = false;
+      $("#db-banner-msg").textContent = err.message || String(err);
+      if(!silent) toast("No se ha podido actualizar: " + (err.message || err), "error");
+    }).finally(function(){
+      refreshing = false;
+      $("#btn-refresh").classList.remove("spinning");
+    });
+  }
+
+  function updateBrandSub(){
+    $("#brand-sub").innerHTML = (state.centro ? escapeHtml(state.centro) : "Sin nombre de centro configurado") +
+      ' <button type="button" id="btn-config-inline">editar centro</button>';
+    var inline = document.getElementById("btn-config-inline");
+    if(inline) inline.addEventListener("click", openConfig);
+  }
+
+  /* ---------- Rendering ---------- */
+  function dueStatus(prevista){
+    if(!prevista) return {label:"Sin fecha prevista", cls:"chip-neutral"};
+    var today = todayISO();
+    if(prevista < today) return {label:"Atrasado", cls:"chip-critical"};
+    var diffDays = (new Date(prevista) - new Date(today)) / 86400000;
+    if(diffDays <= 7) return {label:"Devolución próxima", cls:"chip-warning"};
+    return {label:"En plazo", cls:"chip-success"};
+  }
+  function lapizChip(estado){
+    if(estado === "disponible") return {label:"Disponible", cls:"chip-success"};
+    if(estado === "prestado") return {label:"Prestado", cls:"chip-accent"};
+    return {label:"De baja", cls:"chip-neutral"};
+  }
+  function devolucionChip(estado){
+    if(estado === "bueno") return {label:"Correcto", cls:"chip-success"};
+    if(estado === "incidencia") return {label:"Con incidencia", cls:"chip-warning"};
+    return {label:"Perdido o dañado", cls:"chip-critical"};
+  }
+  function chipEl(chip){ return el("span", {class:"chip "+chip.cls, text:chip.label}); }
+
+  function renderStats(){
+    var lapices = state.lapices.filter(function(l){ return l.estado !== "baja"; });
+    var disponibles = lapices.filter(function(l){ return l.estado === "disponible"; }).length;
+    var prestados = lapices.filter(function(l){ return l.estado === "prestado"; }).length;
+    var atrasados = state.prestamos.filter(function(p){
+      return p.estado === "activo" && p.fechaDevolucionPrevista && p.fechaDevolucionPrevista < todayISO();
+    }).length;
+
+    var row = $("#stats-row");
+    row.innerHTML = "";
+    function stat(label, value, warn){
+      var s = el("div", {class:"stat"+(warn?" warn":"")});
+      s.appendChild(el("b", {text:String(value)}));
+      s.appendChild(el("span", {text:label}));
+      return s;
+    }
+    row.appendChild(stat("lápices en total", lapices.length));
+    row.appendChild(stat("disponibles", disponibles));
+    row.appendChild(stat("prestados", prestados));
+    if(atrasados > 0) row.appendChild(stat("atrasados", atrasados, true));
+  }
+
+  function renderActivos(){
+    var q = ($("#search-activos").value || "").toLowerCase().trim();
+    var activos = state.prestamos.filter(function(p){ return p.estado === "activo"; });
+    if(q){
+      activos = activos.filter(function(p){
+        return (p.profesor||"").toLowerCase().indexOf(q) > -1 || (p.lapizCodigo||"").toLowerCase().indexOf(q) > -1;
+      });
+    }
+    activos.sort(function(a,b){
+      var av = a.fechaDevolucionPrevista || "9999-99-99";
+      var bv = b.fechaDevolucionPrevista || "9999-99-99";
+      return av < bv ? -1 : av > bv ? 1 : 0;
+    });
+
+    var tbody = $("#table-activos tbody");
+    tbody.innerHTML = "";
+    var empty = $("#empty-activos");
+    if(activos.length === 0){
+      $("#table-activos").hidden = true;
+      empty.hidden = false;
+      empty.innerHTML = "";
+      if(state.prestamos.length === 0 && state.lapices.length === 0){
+        empty.appendChild(el("b", {text:"Todavía no hay ningún préstamo"}));
+        empty.appendChild(document.createTextNode("Añade primero algún lápiz en el Inventario y luego registra el primer préstamo."));
+      } else if(q){
+        empty.appendChild(el("b", {text:"Sin resultados"}));
+        empty.appendChild(document.createTextNode("Ningún préstamo activo coincide con «"+q+"»."));
+      } else {
+        empty.appendChild(el("b", {text:"No hay préstamos activos"}));
+        empty.appendChild(document.createTextNode("Todos los lápices están disponibles o en el histórico."));
+      }
+      return;
+    }
+    $("#table-activos").hidden = false;
+    empty.hidden = true;
+
+    activos.forEach(function(p){
+      var tr = el("tr");
+      var codeCell = el("td", {class:"mono"});
+      codeCell.textContent = p.lapizCodigo;
+      if(p.lapizMarca){
+        codeCell.appendChild(el("br"));
+        codeCell.appendChild(el("span", {style:"color:var(--text-muted); font-family:var(--font-body); font-weight:400;", text:p.lapizMarca}));
+      }
+      tr.appendChild(codeCell);
+      tr.appendChild(el("td", {text:p.profesor}));
+      tr.appendChild(el("td", {class:"mono", text:formatEs(p.fechaEntrega)}));
+      tr.appendChild(el("td", {class:"mono", text:formatEs(p.fechaDevolucionPrevista)}));
+      tr.appendChild(el("td", {}, [chipEl(dueStatus(p.fechaDevolucionPrevista))]));
+      var actions = el("td", {class:"actions"});
+      var btnReceipt = el("button", {type:"button", class:"link-btn", text:"Resguardo"});
+      btnReceipt.addEventListener("click", function(){ printReceipt(p); });
+      var btnReturn = el("button", {type:"button", class:"link-btn", text:"Devolver"});
+      btnReturn.addEventListener("click", function(){ openReturnModal(p); });
+      actions.appendChild(btnReceipt);
+      actions.appendChild(btnReturn);
+      tr.appendChild(actions);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderInventario(){
+    var lapices = state.lapices.slice().sort(function(a,b){ return (a.codigo||"").localeCompare(b.codigo||""); });
+    var tbody = $("#table-inventario tbody");
+    tbody.innerHTML = "";
+    var empty = $("#empty-inventario");
+    if(lapices.length === 0){
+      $("#table-inventario").hidden = true;
+      empty.hidden = false;
+      empty.innerHTML = "";
+      empty.appendChild(el("b", {text:"El inventario está vacío"}));
+      empty.appendChild(document.createTextNode("Añade tu primer lápiz para poder empezar a registrar préstamos."));
+      var cta = el("button", {type:"button", class:"btn-primary", text:"Añadir lápiz"});
+      cta.addEventListener("click", function(){ openModal("modal-lapiz"); });
+      empty.appendChild(cta);
+      return;
+    }
+    $("#table-inventario").hidden = false;
+    empty.hidden = true;
+
+    lapices.forEach(function(l){
+      var tr = el("tr");
+      tr.appendChild(el("td", {class:"mono", text:l.codigo}));
+      tr.appendChild(el("td", {text:l.marca || "—"}));
+      tr.appendChild(el("td", {}, [chipEl(lapizChip(l.estado))]));
+      tr.appendChild(el("td", {style:"color:var(--text-muted);", text:l.notas || "—"}));
+      var actions = el("td", {class:"actions"});
+      if(l.estado === "baja"){
+        var btnRe = el("button", {type:"button", class:"link-btn", text:"Reactivar"});
+        btnRe.addEventListener("click", function(){
+          apiPost("updateLapiz", {id:l.id, estado:"disponible"}).then(function(){ refreshAll(); }).catch(function(err){ toast(err.message, "error"); });
+        });
+        actions.appendChild(btnRe);
+      } else {
+        var btnBaja = el("button", {type:"button", class:"link-btn danger", text:"Dar de baja"});
+        if(l.estado === "prestado"){
+          btnBaja.disabled = true;
+          btnBaja.title = "Este lápiz está prestado; regístralo como devuelto antes de darlo de baja.";
+        } else {
+          btnBaja.addEventListener("click", function(){
+            askConfirm("Dar de baja "+l.codigo, "Este lápiz dejará de estar disponible para nuevos préstamos. Podrás reactivarlo más adelante si lo necesitas.", function(){
+              apiPost("updateLapiz", {id:l.id, estado:"baja"}).then(function(){ refreshAll(); }).catch(function(err){ toast(err.message, "error"); });
+            });
+          });
+        }
+        actions.appendChild(btnBaja);
+      }
+      tr.appendChild(actions);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderHistorial(){
+    var q = ($("#search-historial").value || "").toLowerCase().trim();
+    var hist = state.prestamos.filter(function(p){ return p.estado === "devuelto"; });
+    if(q){
+      hist = hist.filter(function(p){
+        return (p.profesor||"").toLowerCase().indexOf(q) > -1 || (p.lapizCodigo||"").toLowerCase().indexOf(q) > -1;
+      });
+    }
+    hist.sort(function(a,b){
+      var av = a.fechaDevolucionReal || "";
+      var bv = b.fechaDevolucionReal || "";
+      return av < bv ? 1 : av > bv ? -1 : 0;
+    });
+
+    var tbody = $("#table-historial tbody");
+    tbody.innerHTML = "";
+    var empty = $("#empty-historial");
+    if(hist.length === 0){
+      $("#table-historial").hidden = true;
+      empty.hidden = false;
+      empty.innerHTML = "";
+      empty.appendChild(el("b", {text: q ? "Sin resultados" : "Todavía no hay historial"}));
+      empty.appendChild(document.createTextNode(q ? "Ningún registro coincide con «"+q+"»." : "Cuando se devuelva un préstamo, aparecerá aquí."));
+      return;
+    }
+    $("#table-historial").hidden = false;
+    empty.hidden = true;
+
+    hist.forEach(function(p){
+      var tr = el("tr");
+      tr.appendChild(el("td", {class:"mono", text:p.lapizCodigo}));
+      tr.appendChild(el("td", {text:p.profesor}));
+      tr.appendChild(el("td", {class:"mono", text:formatEs(p.fechaEntrega)}));
+      tr.appendChild(el("td", {class:"mono", text:formatEs(p.fechaDevolucionReal)}));
+      tr.appendChild(el("td", {}, [chipEl(devolucionChip(p.estadoDevolucion))]));
+      var actions = el("td", {class:"actions"});
+      var btnReceipt = el("button", {type:"button", class:"link-btn", text:"Resguardo"});
+      btnReceipt.addEventListener("click", function(){ printReceipt(p); });
+      actions.appendChild(btnReceipt);
+      tr.appendChild(actions);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderLoanSelect(){
+    var sel = $("#loan-lapiz");
+    var current = sel.value;
+    sel.innerHTML = "";
+    var disponibles = state.lapices.filter(function(l){ return l.estado === "disponible"; })
+      .sort(function(a,b){ return (a.codigo||"").localeCompare(b.codigo||""); });
+    if(disponibles.length === 0){
+      sel.appendChild(el("option", {value:"", text:"No hay lápices disponibles"}));
+      sel.disabled = true;
+    } else {
+      sel.disabled = false;
+      disponibles.forEach(function(l){
+        var label = l.codigo + (l.marca ? " — " + l.marca : "");
+        sel.appendChild(el("option", {value:l.id, text:label}));
+      });
+      if(current) sel.value = current;
+    }
+  }
+
+  function renderAll(){
+    renderStats();
+    renderActivos();
+    renderInventario();
+    renderHistorial();
+    renderLoanSelect();
+  }
+
+  /* ---------- Tabs ---------- */
+  $all(".tab").forEach(function(t){
+    t.addEventListener("click", function(){
+      $all(".tab").forEach(function(o){ o.setAttribute("aria-selected", "false"); });
+      $all(".panel").forEach(function(p){ p.classList.remove("active"); });
+      t.setAttribute("aria-selected", "true");
+      $("#panel-"+t.getAttribute("data-tab")).classList.add("active");
+    });
+  });
+  $("#search-activos").addEventListener("input", renderActivos);
+  $("#search-historial").addEventListener("input", renderHistorial);
+  $("#btn-refresh").addEventListener("click", function(){ refreshAll(); });
+
+  /* ---------- Signature pad ---------- */
+  var sigCtx = null, sigDrawing = false, sigHas = false, sigLast = null;
+  function setupSignatureCanvas(){
+    var canvas = $("#loan-signature");
+    var rect = canvas.getBoundingClientRect();
+    var ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, rect.width * ratio);
+    canvas.height = Math.max(1, rect.height * ratio);
+    sigCtx = canvas.getContext("2d");
+    sigCtx.scale(ratio, ratio);
+    sigCtx.lineWidth = 2;
+    sigCtx.lineCap = "round";
+    sigCtx.lineJoin = "round";
+    sigCtx.strokeStyle = getComputedStyle(document.body).color;
+    sigHas = false;
+
+    function pos(e){
+      var r = canvas.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+    canvas.onpointerdown = function(e){
+      sigDrawing = true; sigHas = true;
+      sigLast = pos(e);
+      canvas.setPointerCapture(e.pointerId);
+    };
+    canvas.onpointermove = function(e){
+      if(!sigDrawing) return;
+      var p = pos(e);
+      sigCtx.beginPath();
+      sigCtx.moveTo(sigLast.x, sigLast.y);
+      sigCtx.lineTo(p.x, p.y);
+      sigCtx.stroke();
+      sigLast = p;
+    };
+    function stop(){ sigDrawing = false; }
+    canvas.onpointerup = stop;
+    canvas.onpointerleave = stop;
+    canvas.onpointercancel = stop;
+  }
+  $("#btn-clear-signature").addEventListener("click", function(){
+    var canvas = $("#loan-signature");
+    if(sigCtx) sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+    sigHas = false;
+  });
+  function signatureDataUrl(){
+    if(!sigHas) return "";
+    try { return $("#loan-signature").toDataURL("image/png"); } catch(e){ return ""; }
+  }
+
+  /* ---------- New loan ---------- */
+  function resetLoanForm(){
+    $("#form-loan").reset();
+    $("#loan-fecha").value = todayISO();
+    $("#loan-registrado-por").value = getRegistradoPor();
+    delete $("#loan-firma-nombre").dataset.touched;
+    renderLoanSelect();
+  }
+  $("#btn-new-loan").addEventListener("click", function(){
+    if(!apiConfigured()){ toast("Configura primero API_URL en el archivo HTML.", "error"); return; }
+    resetLoanForm();
+    openModal("modal-loan");
+    requestAnimationFrame(setupSignatureCanvas);
+  });
+  $("#loan-profesor").addEventListener("input", function(e){
+    var nameField = $("#loan-firma-nombre");
+    if(!nameField.dataset.touched) nameField.value = e.target.value;
+  });
+  $("#loan-firma-nombre").addEventListener("input", function(e){ e.target.dataset.touched = "1"; });
+
+  $("#form-loan").addEventListener("submit", function(e){
+    e.preventDefault();
+    var form = e.target;
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    var lapizId = $("#loan-lapiz").value;
+    var lapiz = state.lapices.find(function(l){ return l.id === lapizId; });
+    if(!lapiz){ toast("Selecciona un lápiz disponible.", "error"); return; }
+    var registradoPor = $("#loan-registrado-por").value.trim();
+    setRegistradoPor(registradoPor);
+
+    var firma = signatureDataUrl();
+    if(firma.length > 45000){
+      firma = "";
+      toast("La firma dibujada era demasiado grande y no se ha guardado; el préstamo se registra sin ella.", "error");
+    }
+
+    var payload = {
+      lapizId: lapizId,
+      lapizCodigo: lapiz.codigo,
+      lapizMarca: lapiz.marca || "",
+      profesor: $("#loan-profesor").value.trim(),
+      fechaEntrega: $("#loan-fecha").value,
+      fechaDevolucionPrevista: $("#loan-prevista").value || "",
+      notas: $("#loan-notas").value.trim(),
+      aceptaNormas: $("#loan-acepta").checked,
+      firmaNombre: $("#loan-firma-nombre").value.trim(),
+      firmaImagen: firma,
+      registradoPor: registradoPor
+    };
+
+    var btn = $("#btn-submit-loan");
+    btn.disabled = true; btn.textContent = "Guardando…";
+    apiPost("addPrestamo", payload)
+      .then(function(){ return apiPost("updateLapiz", {id:lapizId, estado:"prestado"}); })
+      .then(function(){
+        closeModal("modal-loan");
+        $all(".tab").forEach(function(o){ o.setAttribute("aria-selected", o.getAttribute("data-tab")==="activos" ? "true":"false"); });
+        $all(".panel").forEach(function(p){ p.classList.remove("active"); });
+        $("#panel-activos").classList.add("active");
+        toast("Préstamo registrado.", "success");
+        return refreshAll();
+      })
+      .catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
+      .finally(function(){ btn.disabled = false; btn.textContent = "Registrar préstamo"; });
+  });
+
+  /* ---------- Return loan ---------- */
+  var returnTarget = null;
+  function openReturnModal(p){
+    returnTarget = p;
+    $("#return-summary").textContent = p.lapizCodigo + " — " + p.profesor + " (entregado el " + formatEs(p.fechaEntrega) + ")";
+    $("#return-fecha").value = todayISO();
+    $("#return-estado").value = "bueno";
+    $("#return-baja-row").hidden = true;
+    $("#return-baja").checked = false;
+    $("#return-notas").value = "";
+    openModal("modal-return");
+  }
+  $("#return-estado").addEventListener("change", function(e){
+    $("#return-baja-row").hidden = e.target.value !== "dañado";
+  });
+  $("#form-return").addEventListener("submit", function(e){
+    e.preventDefault();
+    var form = e.target;
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    if(!returnTarget) return;
+    var estadoDevolucion = $("#return-estado").value;
+    var darDeBaja = estadoDevolucion === "dañado" && $("#return-baja").checked;
+
+    var btn = $("#btn-submit-return");
+    btn.disabled = true; btn.textContent = "Guardando…";
+    apiPost("updatePrestamo", {
+      id: returnTarget.id,
+      estado: "devuelto",
+      fechaDevolucionReal: $("#return-fecha").value,
+      estadoDevolucion: estadoDevolucion,
+      notasDevolucion: $("#return-notas").value.trim()
+    }).then(function(){
+      return apiPost("updateLapiz", { id: returnTarget.lapizId, estado: darDeBaja ? "baja" : "disponible" });
+    }).then(function(){
+      closeModal("modal-return");
+      returnTarget = null;
+      toast("Devolución registrada.", "success");
+      return refreshAll();
+    }).catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
+      .finally(function(){ btn.disabled = false; btn.textContent = "Confirmar devolución"; });
+  });
+
+  /* ---------- New lápiz ---------- */
+  $("#btn-new-lapiz").addEventListener("click", function(){
+    if(!apiConfigured()){ toast("Configura primero API_URL en el archivo HTML.", "error"); return; }
+    $("#form-lapiz").reset();
+    openModal("modal-lapiz");
+  });
+  $("#form-lapiz").addEventListener("submit", function(e){
+    e.preventDefault();
+    var form = e.target;
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    var codigo = $("#lapiz-codigo").value.trim();
+    var dup = state.lapices.some(function(l){ return l.codigo.toLowerCase() === codigo.toLowerCase(); });
+    if(dup){
+      $("#lapiz-codigo").setCustomValidity("Ya existe un lápiz con este código.");
+      $("#lapiz-codigo").reportValidity();
+      $("#lapiz-codigo").setCustomValidity("");
+      return;
+    }
+    var btn = $("#btn-submit-lapiz");
+    btn.disabled = true; btn.textContent = "Guardando…";
+    apiPost("addLapiz", {
+      codigo: codigo,
+      marca: $("#lapiz-marca").value.trim(),
+      notas: $("#lapiz-notas").value.trim()
+    }).then(function(){
+      closeModal("modal-lapiz");
+      toast("Lápiz añadido.", "success");
+      return refreshAll();
+    }).catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
+      .finally(function(){ btn.disabled = false; btn.textContent = "Añadir lápiz"; });
+  });
+
+  /* ---------- Config ---------- */
+  function openConfig(){
+    $("#config-centro").value = state.centro;
+    openModal("modal-config");
+  }
+  $("#btn-config").addEventListener("click", openConfig);
+  $("#btn-config-icon").addEventListener("click", openConfig);
+  $("#form-config").addEventListener("submit", function(e){
+    e.preventDefault();
+    var btn = $("#btn-submit-config");
+    btn.disabled = true; btn.textContent = "Guardando…";
+    apiPost("setConfig", { centro: $("#config-centro").value.trim() }).then(function(){
+      closeModal("modal-config");
+      return refreshAll();
+    }).catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
+      .finally(function(){ btn.disabled = false; btn.textContent = "Guardar"; });
+  });
+
+  /* ---------- Receipt / print ---------- */
+  function printReceipt(p){
+    var lapizLabel = p.lapizCodigo + (p.lapizMarca ? " (" + p.lapizMarca + ")" : "");
+    var html = "";
+    html += "<h2>Resguardo de préstamo</h2>";
+    html += "<div class='r-sub'>" + escapeHtml(state.centro || "Centro educativo") + " · Medios informáticos</div>";
+    html += "<table>";
+    html += "<tr><td>Material</td><td>Lápiz digital " + escapeHtml(lapizLabel) + "</td></tr>";
+    html += "<tr><td>Profesor/a</td><td>" + escapeHtml(p.profesor) + "</td></tr>";
+    html += "<tr><td>Fecha de entrega</td><td>" + formatEs(p.fechaEntrega) + "</td></tr>";
+    html += "<tr><td>Devolución prevista</td><td>" + (p.fechaDevolucionPrevista ? formatEs(p.fechaDevolucionPrevista) : "Sin fecha fijada") + "</td></tr>";
+    if(p.estado === "devuelto"){
+      html += "<tr><td>Fecha de devolución</td><td>" + formatEs(p.fechaDevolucionReal) + "</td></tr>";
+      html += "<tr><td>Estado al devolver</td><td>" + devolucionChip(p.estadoDevolucion).label + "</td></tr>";
+    }
+    html += "</table>";
+    html += "<div class='r-norms'>El profesor/a se compromete a hacer un uso adecuado del material, custodiarlo y devolverlo en el estado en que lo recibió, comunicando cualquier incidencia a Medios Informáticos.</div>";
+    html += "<div class='r-sign'>";
+    if(p.firmaImagen){
+      html += "<img src='" + p.firmaImagen + "' alt='Firma'>";
+    } else {
+      html += "<div class='line'></div>";
+    }
+    html += "<p>Firmado: " + escapeHtml(p.firmaNombre || p.profesor) + "</p>";
+    html += "</div>";
+    $("#receipt-content").innerHTML = html;
+    document.body.classList.add("printing");
+    window.print();
+    setTimeout(function(){ document.body.classList.remove("printing"); }, 300);
+  }
+  window.addEventListener("afterprint", function(){ document.body.classList.remove("printing"); });
+
+  /* ---------- CSV export ---------- */
+  function csvEscape(v){
+    var s = String(v == null ? "" : v);
+    if(/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  $("#btn-export-csv").addEventListener("click", function(){
+    var hist = state.prestamos.filter(function(p){ return p.estado === "devuelto"; });
+    var rows = [["Lápiz","Marca","Profesor","Fecha entrega","Fecha devolución prevista","Fecha devolución real","Estado al devolver","Notas entrega","Notas devolución","Registrado por"]];
+    hist.forEach(function(p){
+      rows.push([p.lapizCodigo, p.lapizMarca, p.profesor, p.fechaEntrega, p.fechaDevolucionPrevista, p.fechaDevolucionReal, devolucionChip(p.estadoDevolucion).label, p.notas, p.notasDevolucion, p.registradoPor]);
+    });
+    var csv = "﻿" + rows.map(function(r){ return r.map(csvEscape).join(","); }).join("\n");
+    var blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "historial-prestamos-pdi.csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  });
+
+  /* ---------- Init ---------- */
+  function init(){
+    if(!apiConfigured()){
+      $("#config-banner").hidden = false;
+      $("#brand-sub").textContent = "Sin conectar";
+      renderAll();
+      return;
+    }
+    refreshAll();
+    pollTimer = setInterval(function(){
+      if(document.visibilityState === "visible") refreshAll(true);
+    }, 20000);
+    document.addEventListener("visibilitychange", function(){
+      if(document.visibilityState === "visible") refreshAll(true);
+    });
+  }
+
+  renderAll();
+  init();
+})();
+</script>
+</body>
+</html>
