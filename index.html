@@ -595,7 +595,7 @@ td.actions{text-align:right; white-space:nowrap;}
     // "_" es solo para romper la caché del navegador y de Google ante
     // fallos intermitentes justo tras publicar o actualizar el Apps Script.
     var bust = "&_=" + Date.now();
-    return fetchConTimeout(API_URL + "?action=" + encodeURIComponent(action) + bust, { method: "GET", cache: "no-store" }, 20000)
+    return fetchConTimeout(API_URL + "?action=" + encodeURIComponent(action) + bust, { method: "GET", cache: "no-store" }, 25000)
       .then(function(r){
         if(!r.ok) throw new Error("El servidor respondió " + r.status + ". Vuelve a intentarlo en unos segundos.");
         return r.json();
@@ -606,11 +606,16 @@ td.actions{text-align:right; white-space:nowrap;}
       });
   }
   function apiPost(action, payload){
+    // 35s de margen: el backend puede esperar hasta 15s solo para
+    // conseguir el bloqueo de escritura (LockService) antes de empezar
+    // a guardar, así que un tope de 20s se cumplía casi siempre justo
+    // cuando había cualquier pequeño retraso — y el guardado, aunque
+    // "colgado" en el navegador, terminaba completándose en la hoja.
     return fetchConTimeout(API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: action, payload: payload })
-    }, 20000).then(function(r){ return r.json(); })
+    }, 35000).then(function(r){ return r.json(); })
       .then(function(json){
         if(json.error) throw new Error(json.error);
         return json;
@@ -1015,7 +1020,16 @@ td.actions{text-align:right; white-space:nowrap;}
         toast("Préstamo registrado.", "success");
         refreshAll();
       })
-      .catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
+      .catch(function(err){
+        var msg = err.message || String(err);
+        // Si lo que falló fue el tiempo de espera, el guardado puede
+        // haber terminado igualmente en la hoja de cálculo aunque la
+        // respuesta no llegara a tiempo: se comprueba refrescando,
+        // en vez de dar el préstamo por perdido.
+        var esTimeout = /tardado demasiado/.test(msg);
+        toast(esTimeout ? "El servidor ha tardado en responder; comprobando si el préstamo se guardó…" : ("No se ha podido guardar: " + msg), "error");
+        refreshAll();
+      })
       .finally(function(){ btn.disabled = false; btn.textContent = "Registrar préstamo"; });
   });
 
@@ -1061,7 +1075,12 @@ td.actions{text-align:right; white-space:nowrap;}
       returnTarget = null;
       toast("Devolución registrada.", "success");
       refreshAll();
-    }).catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
+    }).catch(function(err){
+      var msg = err.message || String(err);
+      var esTimeout = /tardado demasiado/.test(msg);
+      toast(esTimeout ? "El servidor ha tardado en responder; comprobando si la devolución se guardó…" : ("No se ha podido guardar: " + msg), "error");
+      refreshAll();
+    })
       .finally(function(){ btn.disabled = false; btn.textContent = "Confirmar devolución"; });
   });
 
