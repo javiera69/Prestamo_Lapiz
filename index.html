@@ -575,11 +575,27 @@ td.actions{text-align:right; white-space:nowrap;}
   function apiConfigured(){
     return API_URL.indexOf("PON_AQUI") === -1;
   }
+  // fetch() no tiene tope de tiempo por defecto: si Apps Script se
+  // queda colgado, la promesa nunca se resuelve ni falla. Este helper
+  // corta la petición pasado un tiempo para que siempre haya una
+  // respuesta (éxito o error), y nunca una pantalla congelada.
+  function fetchConTimeout(url, opts, ms){
+    var controller = new AbortController();
+    var timer = setTimeout(function(){ controller.abort(); }, ms);
+    return fetch(url, Object.assign({}, opts, { signal: controller.signal }))
+      .catch(function(err){
+        if(err && err.name === "AbortError"){
+          throw new Error("El servidor ha tardado demasiado en responder. Comprueba tu conexión y vuelve a intentarlo.");
+        }
+        throw err;
+      })
+      .finally(function(){ clearTimeout(timer); });
+  }
   function apiGet(action){
     // "_" es solo para romper la caché del navegador y de Google ante
     // fallos intermitentes justo tras publicar o actualizar el Apps Script.
     var bust = "&_=" + Date.now();
-    return fetch(API_URL + "?action=" + encodeURIComponent(action) + bust, { method: "GET", cache: "no-store" })
+    return fetchConTimeout(API_URL + "?action=" + encodeURIComponent(action) + bust, { method: "GET", cache: "no-store" }, 20000)
       .then(function(r){
         if(!r.ok) throw new Error("El servidor respondió " + r.status + ". Vuelve a intentarlo en unos segundos.");
         return r.json();
@@ -590,11 +606,11 @@ td.actions{text-align:right; white-space:nowrap;}
       });
   }
   function apiPost(action, payload){
-    return fetch(API_URL, {
+    return fetchConTimeout(API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: action, payload: payload })
-    }).then(function(r){ return r.json(); })
+    }, 20000).then(function(r){ return r.json(); })
       .then(function(json){
         if(json.error) throw new Error(json.error);
         return json;
@@ -985,15 +1001,19 @@ td.actions{text-align:right; white-space:nowrap;}
 
     var btn = $("#btn-submit-loan");
     btn.disabled = true; btn.textContent = "Guardando…";
+    // Un único viaje al servidor: addPrestamo ahora también marca el
+    // lápiz como "prestado" en el mismo bloqueo (ver apps-script-backend.gs).
+    // En cuanto se confirma el guardado se cierra el modal y se
+    // reactiva el botón; la actualización de la lista (refreshAll) se
+    // hace después, en segundo plano, sin bloquear la pantalla.
     apiPost("addPrestamo", payload)
-      .then(function(){ return apiPost("updateLapiz", {id:lapizId, estado:"prestado"}); })
       .then(function(){
         closeModal("modal-loan");
         $all(".tab").forEach(function(o){ o.setAttribute("aria-selected", o.getAttribute("data-tab")==="activos" ? "true":"false"); });
         $all(".panel").forEach(function(p){ p.classList.remove("active"); });
         $("#panel-activos").classList.add("active");
         toast("Préstamo registrado.", "success");
-        return refreshAll();
+        refreshAll();
       })
       .catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
       .finally(function(){ btn.disabled = false; btn.textContent = "Registrar préstamo"; });
@@ -1024,19 +1044,23 @@ td.actions{text-align:right; white-space:nowrap;}
 
     var btn = $("#btn-submit-return");
     btn.disabled = true; btn.textContent = "Guardando…";
+    // Un único viaje al servidor: updatePrestamo incluye ahora
+    // lapizId + nuevoEstadoLapiz para que el backend actualice también
+    // el lápiz en la misma llamada. El modal se cierra en cuanto se
+    // confirma el guardado; refreshAll va después, en segundo plano.
     apiPost("updatePrestamo", {
       id: returnTarget.id,
       estado: "devuelto",
       fechaDevolucionReal: $("#return-fecha").value,
       estadoDevolucion: estadoDevolucion,
-      notasDevolucion: $("#return-notas").value.trim()
-    }).then(function(){
-      return apiPost("updateLapiz", { id: returnTarget.lapizId, estado: darDeBaja ? "baja" : "disponible" });
+      notasDevolucion: $("#return-notas").value.trim(),
+      lapizId: returnTarget.lapizId,
+      nuevoEstadoLapiz: darDeBaja ? "baja" : "disponible"
     }).then(function(){
       closeModal("modal-return");
       returnTarget = null;
       toast("Devolución registrada.", "success");
-      return refreshAll();
+      refreshAll();
     }).catch(function(err){ toast("No se ha podido guardar: " + (err.message||err), "error"); })
       .finally(function(){ btn.disabled = false; btn.textContent = "Confirmar devolución"; });
   });
